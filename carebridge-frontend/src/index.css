@@ -1,14 +1,91 @@
+/* ===== CareBridge global styles =====
+   Seniors are the main users, so we prioritise readability:
+   - a legible font (Atkinson Hyperlegible, loaded in index.html)
+   - a large base font size (18px)
+   - big touch targets (buttons/links at least 48px tall)
+   - a clearly visible focus outline for keyboard (Tab) users
+*/
+
+/* Color palette as CSS variables so every component can reuse them */
+:root {
+  --color-primary: #047857;       /* main green for buttons and accents */
+  --color-primary-dark: #065f46;  /* darker green for hover states */
+  --color-light: #ecfdf5;         /* very light green for badges/backgrounds */
+  --color-text: #111827;          /* main text colour (near-black) */
+  --color-muted: #374151;         /* secondary/muted text */
+  --color-background: #f6f8f7;    /* page background */
+  --color-white: #ffffff;
+  --color-border: #e5e7eb;        /* subtle border for cards */
+
+  /* Fonts and sizing */
+  --font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, sans-serif;
+  --font-size-base: 18px;         /* base font size for senior readability */
+
+  /* Spacing and radii */
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+/* A predictable box model for every element */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+html {
+  /* 18px base font size; rem units scale from here */
+  font-size: var(--font-size-base);
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #f4f7f6;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-family: var(--font-family);
+  color: var(--color-text);
+  background-color: var(--color-background);
+  line-height: 1.6;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Make images never overflow their container */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ===== Accessibility: focus outline =====
+   Show a clear outline when an element is focused via keyboard (Tab).
+   We use :focus-visible so the outline only appears for keyboard users,
+   not when clicking with a mouse.
+*/
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== Touch targets =====
+   Buttons and links should be at least 48px tall so they are easy to tap.
+*/
+button,
+a {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Remove default list styling; we'll style lists explicitly where needed */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Headings get a slightly tighter line height for readability */
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  color: var(--color-text);
 }
