@@ -4,6 +4,7 @@ import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/authRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
 import volunteerRoutes from './routes/volunteerRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import { notFound, errorHandler } from './middleware/error.middleware.js';
 
 // Create the Express application.
@@ -27,6 +28,9 @@ app.use('/api/requests', requestRoutes);
 
 // Volunteer routes: public profile data such as ratings.
 app.use('/api/volunteers', volunteerRoutes);
+
+// Admin routes: manage volunteers, users and see dashboard stats (admin only).
+app.use('/api/admin', adminRoutes);
 
 // 404 handler and central error handler must be registered last.
 app.use(notFound);
