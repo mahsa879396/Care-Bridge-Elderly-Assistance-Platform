@@ -1,0 +1,107 @@
+/* AdminDashboard.css: styles for the admin page (desktop first, still works on phones).
+   All class names start with "ad-" so they never clash with other pages. */
+
+.ad-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  font-size: 17px;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.ad-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.ad-title { margin: 0; font-size: 34px; }
+.ad-tag { padding: 6px 14px; border-radius: 10px; background: #111827; color: #ffffff; font-size: 15px; font-weight: 700; }
+
+.ad-info { margin: 0; font-size: 16px; color: #374151; }
+.ad-error {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #b91c1c;
+  background: #fef2f2;
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+/* Number cards */
+.ad-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.ad-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+}
+.ad-stat-label { font-size: 15px; color: #374151; }
+.ad-stat-value { font-size: 34px; font-weight: 700; }
+.ad-stat-note { font-size: 14px; color: #374151; }
+
+/* Sections */
+.ad-section { display: flex; flex-direction: column; gap: 14px; }
+.ad-section-title { margin: 0; font-size: 24px; }
+
+.ad-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.ad-tab {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111827;
+  font-family: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+.ad-tab--active { border-color: #047857; background: #047857; color: #ffffff; font-weight: 700; }
+
+/* Tables scroll sideways on small screens instead of breaking the page */
+.ad-table-box { overflow-x: auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; }
+.ad-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 16px; }
+.ad-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #374151;
+  background: #f9fafb;
+}
+.ad-table td { padding: 14px 16px; border-top: 1px solid #e5e7eb; vertical-align: top; }
+.ad-empty { color: #374151; text-align: center; }
+
+.ad-actions { display: flex; gap: 8px; }
+.ad-btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #047857;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ad-btn--danger { background: #ffffff; color: #b91c1c; border: 2px solid #b91c1c; }
+.ad-btn:disabled { opacity: 0.6; cursor: wait; }
+
+.ad-badge { padding: 4px 12px; border-radius: 999px; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.ad-badge--waiting { background: #fef3c7; color: #78350f; }
+.ad-badge--accepted { background: #dbeafe; color: #1e3a8a; }
+.ad-badge--done { background: #d1fae5; color: #064e3b; }
+
+.ad-page button:focus-visible { outline: 4px solid #f59e0b; outline-offset: 2px; }
+
+@media (max-width: 768px) {
+  .ad-page { padding: 20px 16px 32px; }
+  .ad-title { font-size: 28px; }
+}
