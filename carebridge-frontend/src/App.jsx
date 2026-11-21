@@ -12,6 +12,19 @@ import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 
 /*
+  Placeholder for the "New request" page (/senior/new).
+  The real page will be built in part 2 of this task series.
+*/
+function SeniorNewPlaceholder() {
+  return (
+    <div className="page">
+      <h1>New request</h1>
+      <p>This page will be built in the next part.</p>
+    </div>
+  );
+}
+
+/*
   App sets up the router. The Layout component wraps every page so the
   header is always visible, and <Outlet /> inside Layout renders the
   matched page.
@@ -26,6 +39,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/senior" element={<SeniorHome />} />
+          <Route path="/senior/new" element={<SeniorNewPlaceholder />} />
           <Route path="/family" element={<FamilyHome />} />
           <Route path="/volunteer" element={<VolunteerFeed />} />
           <Route path="/admin" element={<AdminDashboard />} />

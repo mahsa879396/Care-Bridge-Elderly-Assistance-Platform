@@ -1,0 +1,119 @@
+/* SeniorHome.css: styles for the senior home page.
+   All class names start with "sh-" so they never clash with other pages. */
+
+.sh-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  align-items: flex-start;
+  font-size: 18px;
+  color: #111827;
+}
+
+/* Left column */
+.sh-side {
+  flex: 1 1 320px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.sh-hello { margin: 0; font-size: 40px; }
+
+/* The big green "Ask for help" button */
+.sh-ask {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 28px;
+  border-radius: 20px;
+  background: #047857;
+  color: #ffffff;
+  text-decoration: none;
+}
+.sh-ask:hover { background: #065f46; }
+.sh-ask-title { font-size: 28px; font-weight: 700; }
+.sh-ask-text { font-size: 18px; line-height: 1.4; }
+
+/* Right column */
+.sh-list {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.sh-list-title { margin: 8px 0 0; font-size: 28px; }
+.sh-info { margin: 0; color: #374151; }
+.sh-error {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #b91c1c;
+  background: #fef2f2;
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+/* One request card */
+.sh-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 18px;
+}
+.sh-card-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sh-card-title { margin: 0; font-size: 22px; }
+.sh-card-meta { margin: 0; color: #374151; }
+.sh-card-helper { margin: 0; font-weight: 700; color: #047857; }
+.sh-card-helper a { color: #047857; }
+.sh-card-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* Status badges (dark text on light color = enough contrast) */
+.sh-badge {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.sh-badge--waiting { background: #fef3c7; color: #78350f; }
+.sh-badge--accepted { background: #dbeafe; color: #1e3a8a; }
+.sh-badge--done { background: #d1fae5; color: #064e3b; }
+
+/* Small buttons on the cards */
+.sh-btn {
+  min-height: 48px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #047857;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sh-btn--outline { background: #ffffff; color: #111827; border: 2px solid #d1d5db; }
+
+/* Clear outline when moving with the Tab key */
+.sh-page a:focus-visible,
+.sh-page button:focus-visible {
+  outline: 4px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+/* Phones: one column */
+@media (max-width: 768px) {
+  .sh-page { padding: 24px 16px; }
+  .sh-hello { font-size: 32px; }
+  .sh-card { padding: 18px; }
+}
