@@ -1,7 +1,8 @@
-// NewRequest.jsx: the "Ask for help" form (/senior/new).
-// A senior (or family member) chooses what kind of help, when, and where.
+// NewRequest.jsx: the "Ask for help" form.
+// /senior/new: a senior asks for themselves.
+// /family/new?senior=<id>&name=<first name>: a family member asks for a relative.
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { createRequest } from "../services/api";
 import "./NewRequest.css";
 
@@ -77,6 +78,13 @@ export default function NewRequest() {
   const token = localStorage.getItem("token");
   const user = getSavedUser();
 
+  // For family members: which senior is this request for? (from the address)
+  const [searchParams] = useSearchParams();
+  const isFamily = user.role === "family";
+  const seniorId = searchParams.get("senior");
+  const seniorName = searchParams.get("name");
+  const homePath = isFamily ? "/family" : "/senior";
+
   // Start with the user's own language and city, so there is less to type.
   const [form, setForm] = useState({
     category: "grocery",
@@ -93,6 +101,10 @@ export default function NewRequest() {
   // Nobody logged in? Send them to the login page.
   if (!token) {
     return <Navigate to="/login" replace />;
+  }
+  // A family member must choose a person first (from the family home page).
+  if (isFamily && !seniorId) {
+    return <Navigate to="/family" replace />;
   }
 
   // One function for all inputs: uses each input's "name".
@@ -118,8 +130,10 @@ export default function NewRequest() {
         language: form.language,
         city: form.city.trim(),
         date,
+        // Only family members send seniorId; seniors ask for themselves.
+        ...(isFamily ? { seniorId } : {}),
       });
-      navigate("/senior"); // back to "My requests"
+      navigate(homePath); // back to the home page
     } catch (error) {
       setServerError(error.message);
     } finally {
@@ -143,7 +157,7 @@ export default function NewRequest() {
 
   return (
     <div className="nr-page">
-      <Link to="/senior" className="nr-back">
+      <Link to={homePath} className="nr-back">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M15 18l-6-6 6-6" />
@@ -152,7 +166,9 @@ export default function NewRequest() {
       </Link>
 
       <form className="nr-card" onSubmit={handleSubmit} noValidate>
-        <h1 className="nr-title">What do you need help with?</h1>
+        <h1 className="nr-title">
+          {isFamily ? `What does ${seniorName || "your relative"} need help with?` : "What do you need help with?"}
+        </h1>
 
         {/* Category: real radio buttons shown as big tiles */}
         <fieldset className="nr-fieldset">
