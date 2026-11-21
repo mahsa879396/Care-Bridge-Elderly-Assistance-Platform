@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/authController.js';
+import { register, login, getMe } from '../controllers/authController.js';
+import { protect } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -8,5 +9,9 @@ router.post('/register', register);
 
 // POST /api/auth/login -> log in with email and password and return a token.
 router.post('/login', login);
+
+// GET /api/auth/me -> return the logged-in user.
+// protect runs first and rejects the request if the token is missing or invalid.
+router.get('/me', protect, getMe);
 
 export default router;

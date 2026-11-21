@@ -103,3 +103,22 @@ export const login = async (req, res, next) => {
     return next(error);
   }
 };
+
+// GET /api/auth/me
+// Returns the currently logged-in user, loaded fresh from the database.
+export const getMe = async (req, res, next) => {
+  try {
+    // req.user ({ id, role }) is set by the protect middleware.
+    const user = await User.findById(req.user.id);
+
+    // The token can be valid even after the account was deleted.
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Return the user without the password (toJSON strips it).
+    return res.json(user.toJSON());
+  } catch (error) {
+    return next(error);
+  }
+};
