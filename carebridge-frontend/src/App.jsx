@@ -6,6 +6,7 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import SeniorHome from './pages/SeniorHome';
+import NewRequest from './pages/NewRequest';
 import FamilyHome from './pages/FamilyHome';
 import VolunteerFeed from './pages/VolunteerFeed';
 import AdminDashboard from './pages/AdminDashboard';
@@ -26,6 +27,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/senior" element={<SeniorHome />} />
+          <Route path="/senior/new" element={<NewRequest />} />
           <Route path="/family" element={<FamilyHome />} />
           <Route path="/volunteer" element={<VolunteerFeed />} />
           <Route path="/admin" element={<AdminDashboard />} />

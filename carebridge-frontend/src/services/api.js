@@ -17,6 +17,11 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Header with the login "ID card" for protected routes.
+function authHeaders() {
+  return { Authorization: `Bearer ${localStorage.getItem("token")}` };
+}
+
 // Sends a POST request with a JSON body and returns the JSON answer.
 // If the server answers with an error (400, 401, 409...), we throw an Error
 // that carries the server's "message", so the page can show it.
@@ -48,7 +53,7 @@ export async function register(userData) {
     await wait(500);
     return {
       token: "mock-token",
-      user: { firstName: userData.firstName, role: userData.role },
+      user: { firstName: userData.firstName, lastName: userData.lastName, role: userData.role },
     };
   }
   return postJson("/api/auth/register", userData);
@@ -59,9 +64,45 @@ export async function login(email, password) {
   if (USE_MOCK) {
     console.log("MOCK MODE: login", email);
     await wait(500);
-    return { token: "mock-token", user: { firstName: "Test", role: "senior" } };
+    return { token: "mock-token", user: { firstName: "Test", lastName: "User", role: "senior" } };
   }
   return postJson("/api/auth/login", { email, password });
+}
+
+// The logged-in user's own requests (senior: created, volunteer: accepted).
+export async function getMyRequests() {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: getMyRequests");
+    await wait(500);
+    const sara = { firstName: "Sara", lastName: "Nieminen", phone: "040 111 2233" };
+    return [
+      { _id: "1", category: "grocery", description: "Bread, milk and coffee", date: "2026-11-26T10:00:00Z", status: "Accepted", volunteer: sara, rating: null },
+      { _id: "2", category: "companionship", description: "A short walk in the park", date: "2026-11-28T14:00:00Z", status: "Pending", volunteer: null, rating: null },
+      { _id: "3", category: "mobility", description: "Ride to the doctor", date: "2026-11-12T09:00:00Z", status: "Completed", volunteer: sara, rating: null },
+    ];
+  }
+  const response = await fetch(`${API_URL}/api/requests/mine`, { headers: authHeaders() });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || "Could not load your requests.");
+  return data;
+}
+
+// Create a new help request (senior or family member).
+// data = { category, description, language, city, date }
+export async function createRequest(data) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: createRequest", data);
+    await wait(500);
+    return { _id: "mock-new", ...data, status: "Pending", volunteer: null, rating: null };
+  }
+  const response = await fetch(`${API_URL}/api/requests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.message || "Could not send your request.");
+  return result;
 }
 
 // Save the login "ID card" (token) and the user in the browser.
