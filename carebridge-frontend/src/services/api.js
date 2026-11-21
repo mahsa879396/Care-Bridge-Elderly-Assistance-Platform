@@ -74,7 +74,7 @@ export async function login(email, password) {
     await wait(500);
     return {
       token: "mock-token",
-      user: { firstName: "Test", lastName: "User", role: "senior", city: "Lahti", languages: ["Finnish"] },
+      user: { firstName: "Test", lastName: "User", role: email.startsWith("admin") ? "admin" : "senior", city: "Lahti", languages: ["Finnish"] },
     };
   }
   return request("POST", "/api/auth/login", { email, password });
@@ -170,6 +170,66 @@ export async function cancelRequest(id) {
     return { message: "Request cancelled" };
   }
   return request("DELETE", `/api/requests/${id}`);
+}
+
+// ---------- Admin ----------
+
+// Numbers for the admin overview.
+export async function getAdminStats() {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: getAdminStats");
+    await wait(400);
+    return { seniors: 38, families: 17, volunteers: 24, pendingVolunteers: 2, openRequests: 5, acceptedRequests: 4, completedRequests: 31 };
+  }
+  return request("GET", "/api/admin/stats");
+}
+
+// Volunteers by verification status: "pending", "verified" or "rejected".
+export async function getVolunteers(status = "pending") {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: getVolunteers", status);
+    await wait(400);
+    if (status !== "pending") return [];
+    return [
+      { _id: "v1", firstName: "Jukka", lastName: "Laine", email: "jukka.l@example.fi", phone: "050 222 3344", city: "Lahti", languages: ["Finnish", "Swedish"], createdAt: "2026-11-20T09:00:00Z" },
+      { _id: "v2", firstName: "Elif", lastName: "Kaya", email: "elif.k@example.fi", phone: "044 333 4455", city: "Espoo", languages: ["Finnish", "English"], createdAt: "2026-11-21T12:00:00Z" },
+    ];
+  }
+  return request("GET", `/api/admin/volunteers?status=${status}`);
+}
+
+// Admin approves a volunteer (one time identity check).
+export async function verifyVolunteer(id) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: verifyVolunteer", id);
+    await wait(400);
+    return { _id: id, verificationStatus: "verified" };
+  }
+  return request("PATCH", `/api/admin/volunteers/${id}/verify`);
+}
+
+// Admin rejects a volunteer.
+export async function rejectVolunteer(id) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: rejectVolunteer", id);
+    await wait(400);
+    return { _id: id, verificationStatus: "rejected" };
+  }
+  return request("PATCH", `/api/admin/volunteers/${id}/reject`);
+}
+
+// Every help request (read only for the admin).
+export async function getAdminRequests(status = "") {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: getAdminRequests", status);
+    await wait(400);
+    return [
+      { _id: "r1", category: "grocery", date: "2026-11-26T10:00:00Z", status: "Accepted", senior: MOCK_AINO, createdBy: { firstName: "Mikko", lastName: "Virtanen" }, volunteer: MOCK_SARA },
+      { _id: "r2", category: "companionship", date: "2026-11-28T14:00:00Z", status: "Pending", senior: MOCK_AINO, createdBy: MOCK_AINO, volunteer: null },
+      { _id: "r3", category: "mobility", date: "2026-11-12T09:00:00Z", status: "Completed", senior: MOCK_AINO, createdBy: { firstName: "Mikko", lastName: "Virtanen" }, volunteer: MOCK_SARA },
+    ];
+  }
+  return request("GET", `/api/admin/requests${status ? `?status=${status}` : ""}`);
 }
 
 // ---------- Session helpers ----------
