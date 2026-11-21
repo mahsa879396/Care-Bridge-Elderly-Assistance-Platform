@@ -87,6 +87,24 @@ export async function getMyRequests() {
   return data;
 }
 
+// Create a new help request (senior or family member).
+// data = { category, description, language, city, date }
+export async function createRequest(data) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: createRequest", data);
+    await wait(500);
+    return { _id: "mock-new", ...data, status: "Pending", volunteer: null, rating: null };
+  }
+  const response = await fetch(`${API_URL}/api/requests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(data),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result.message || "Could not send your request.");
+  return result;
+}
+
 // Save the login "ID card" (token) and the user in the browser.
 export function saveSession({ token, user }) {
   localStorage.setItem("token", token);

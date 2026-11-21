@@ -1,0 +1,134 @@
+/* NewRequest.css: styles for the "Ask for help" form.
+   All class names start with "nr-" so they never clash with other pages. */
+
+.nr-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  font-size: 18px;
+  color: #111827;
+}
+
+.nr-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  margin-bottom: 12px;
+  color: #047857;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nr-card {
+  padding: 36px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+.nr-title { margin: 0; font-size: 34px; }
+
+/* Hidden on screen but still read by screen readers */
+.nr-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+fieldset.nr-fieldset { margin: 0; padding: 0; border: 0; }
+
+/* Category tiles */
+.nr-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.nr-category {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  border: 2px solid #d1d5db;
+  border-radius: 16px;
+  font-size: 19px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+.nr-category--selected { border: 3px solid #047857; background: #ecfdf5; color: #065f46; }
+
+/* Fields */
+.nr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+}
+.nr-field { display: flex; flex-direction: column; gap: 8px; }
+.nr-field label { font-weight: 700; }
+
+.nr-input {
+  min-height: 54px;
+  padding: 0 14px;
+  font-size: 18px;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  border: 2px solid #6b7280;
+  border-radius: 12px;
+}
+textarea.nr-input { padding: 14px 16px; line-height: 1.4; resize: vertical; }
+.nr-input--error { border-color: #b91c1c; }
+
+.nr-hint { font-size: 16px; color: #374151; }
+.nr-error-text { font-size: 16px; font-weight: 700; color: #b91c1c; }
+
+.nr-server-error {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #b91c1c;
+  background: #fef2f2;
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+.nr-submit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
+.nr-submit {
+  min-height: 62px;
+  padding: 0 44px;
+  border: 0;
+  border-radius: 14px;
+  background: #047857;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 21px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.nr-submit:hover { background: #065f46; }
+.nr-submit:disabled { opacity: 0.6; cursor: wait; }
+
+/* Clear outline when moving with the Tab key */
+.nr-page a:focus-visible,
+.nr-page button:focus-visible,
+.nr-input:focus-visible,
+.nr-category:focus-within {
+  outline: 4px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Phones */
+@media (max-width: 768px) {
+  .nr-page { padding: 20px 16px 32px; }
+  .nr-card { padding: 22px; }
+  .nr-title { font-size: 28px; }
+  .nr-categories { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nr-submit { width: 100%; }
+}
