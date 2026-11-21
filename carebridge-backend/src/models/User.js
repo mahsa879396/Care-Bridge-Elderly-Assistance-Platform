@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema(
     city: { type: String, required: true },
     // Only volunteers use this field; it tracks whether they were verified.
     verificationStatus: { type: String, enum: ['pending', 'verified', 'rejected'] },
+    // Set on a "managed senior": a senior profile created by a family member.
+    // The senior belongs to that family member and never logs in. Null otherwise.
+    managedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
   // timestamps adds createdAt and updatedAt automatically.
   { timestamps: true }

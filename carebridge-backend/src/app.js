@@ -4,6 +4,7 @@ import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/authRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
 import volunteerRoutes from './routes/volunteerRoutes.js';
+import familyRoutes from './routes/familyRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import { notFound, errorHandler } from './middleware/error.middleware.js';
 
@@ -28,6 +29,9 @@ app.use('/api/requests', requestRoutes);
 
 // Volunteer routes: public profile data such as ratings.
 app.use('/api/volunteers', volunteerRoutes);
+
+// Family routes: manage senior profiles for relatives.
+app.use('/api/family', familyRoutes);
 
 // Admin routes: manage volunteers, users and see dashboard stats (admin only).
 app.use('/api/admin', adminRoutes);
