@@ -74,7 +74,7 @@ export async function login(email, password) {
     await wait(500);
     return {
       token: "mock-token",
-      user: { firstName: "Test", lastName: "User", role: email.startsWith("admin") ? "admin" : "senior", city: "Lahti", languages: ["Finnish"] },
+      user: { firstName: "Test", lastName: "User",role: email.startsWith("admin") ? "admin" : email.startsWith("family") ? "family" : "senior", city: "Lahti", languages: ["Finnish"] },
     };
   }
   return request("POST", "/api/auth/login", { email, password });
@@ -230,6 +230,31 @@ export async function getAdminRequests(status = "") {
     ];
   }
   return request("GET", `/api/admin/requests${status ? `?status=${status}` : ""}`);
+}
+
+// ---------- Family ----------
+
+// The seniors this family member manages.
+export async function getManagedSeniors() {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: getManagedSeniors");
+    await wait(400);
+    return [
+      { _id: "s1", firstName: "Aino", lastName: "Virtanen", phone: "03 123 4567", city: "Lahti", languages: ["Finnish"] },
+    ];
+  }
+  return request("GET", "/api/family/seniors");
+}
+
+// Add a parent or relative who does not use the internet.
+// data = { firstName, lastName, phone, city, languages, consent }
+export async function addManagedSenior(data) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: addManagedSenior", data);
+    await wait(400);
+    return { _id: "mock-senior", ...data, role: "senior" };
+  }
+  return request("POST", "/api/family/seniors", data);
 }
 
 // ---------- Session helpers ----------
