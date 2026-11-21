@@ -105,6 +105,50 @@ export async function createRequest(data) {
   return result;
 }
 
+// Open (Pending) requests for volunteers, with optional filters.
+// filters = { city, language, category } (empty values are ignored)
+export async function getOpenRequests(filters = {}) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: getOpenRequests", filters);
+    await wait(500);
+    const all = [
+      { _id: "11", category: "grocery", description: "Bread, milk and coffee from the shop nearby.", date: "2026-11-26T10:00:00Z", city: "Lahti", language: "Finnish", senior: { firstName: "Aino" } },
+      { _id: "12", category: "companionship", description: "A short walk in the park and a coffee.", date: "2026-11-28T14:00:00Z", city: "Lahti", language: "Finnish", senior: { firstName: "Aino" } },
+      { _id: "13", category: "mobility", description: "Needs a car and help with the stairs.", date: "2026-11-29T12:30:00Z", city: "Lahti", language: "Finnish", senior: { firstName: "Pentti" } },
+      { _id: "14", category: "grocery", description: "Weekly shopping, list ready.", date: "2026-11-27T11:00:00Z", city: "Helsinki", language: "Swedish", senior: { firstName: "Greta" } },
+    ];
+    // Imitate the server's filtering
+    return all.filter(
+      (r) =>
+        (!filters.city || r.city === filters.city) &&
+        (!filters.language || r.language === filters.language) &&
+        (!filters.category || r.category === filters.category)
+    );
+  }
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => value && params.append(key, value));
+  const response = await fetch(`${API_URL}/api/requests?${params}`, { headers: authHeaders() });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || "Could not load requests.");
+  return data;
+}
+
+// A volunteer accepts a request.
+export async function acceptRequest(id) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: acceptRequest", id);
+    await wait(500);
+    return { _id: id, status: "Accepted" };
+  }
+  const response = await fetch(`${API_URL}/api/requests/${id}/accept`, {
+    method: "PATCH",
+    headers: authHeaders(),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.message || "Could not accept this request.");
+  return data;
+}
+
 // Save the login "ID card" (token) and the user in the browser.
 export function saveSession({ token, user }) {
   localStorage.setItem("token", token);

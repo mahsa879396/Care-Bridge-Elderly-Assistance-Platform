@@ -1,0 +1,121 @@
+/* VolunteerFeed.css: styles for the volunteer feed.
+   All class names start with "vf-" so they never clash with other pages. */
+
+.vf-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 36px 24px 48px;
+  font-size: 18px;
+  color: #111827;
+}
+.vf-heading { margin-bottom: 24px; }
+.vf-title { margin: 0; font-size: 36px; }
+
+.vf-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+/* Filter panel */
+.vf-filters {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.vf-filters-title { margin: 0; font-size: 20px; }
+.vf-field { display: flex; flex-direction: column; gap: 6px; }
+.vf-field label { font-weight: 700; font-size: 16px; }
+.vf-input {
+  min-height: 50px;
+  padding: 0 10px;
+  font-size: 17px;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  border: 2px solid #6b7280;
+  border-radius: 10px;
+}
+
+/* Request list */
+.vf-list {
+  flex: 999 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.vf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 18px;
+}
+.vf-info { margin: 0; color: #374151; font-size: 16px; }
+
+.vf-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+}
+.vf-card-title { margin: 0; font-size: 20px; }
+.vf-card-meta { margin: 0; font-size: 16px; color: #374151; }
+.vf-card-text { margin: 0; font-size: 17px; color: #374151; line-height: 1.45; }
+
+.vf-accept {
+  margin-top: auto;
+  min-height: 52px;
+  border: 0;
+  border-radius: 12px;
+  background: #047857;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.vf-accept:hover { background: #065f46; }
+.vf-accept:disabled { opacity: 0.6; cursor: wait; }
+
+/* Messages */
+.vf-success {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #047857;
+  background: #ecfdf5;
+  color: #064e3b;
+  font-weight: 700;
+}
+.vf-error {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #b91c1c;
+  background: #fef2f2;
+  color: #7f1d1d;
+  font-weight: 700;
+}
+
+/* Clear outline when moving with the Tab key */
+.vf-page button:focus-visible,
+.vf-input:focus-visible {
+  outline: 4px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Phones */
+@media (max-width: 768px) {
+  .vf-page { padding: 20px 16px 32px; }
+  .vf-title { font-size: 28px; }
+}
