@@ -2,7 +2,7 @@
 // Shows open (Pending) help requests near the volunteer, with filters,
 // and an "Accept" button on each request.
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { getOpenRequests, acceptRequest } from "../services/api";
 import "./VolunteerFeed.css";
 
@@ -91,6 +91,7 @@ export default function VolunteerFeed() {
     <div className="vf-page">
       <div className="vf-heading">
         <h1 className="vf-title">Requests near you</h1>
+        <Link to="/volunteer/tasks" className="vf-tasks-link">My tasks →</Link>
       </div>
 
       <div className="vf-layout">

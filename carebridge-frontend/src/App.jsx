@@ -9,6 +9,7 @@ import SeniorHome from './pages/SeniorHome';
 import NewRequest from './pages/NewRequest';
 import FamilyHome from './pages/FamilyHome';
 import VolunteerFeed from './pages/VolunteerFeed';
+import MyTasks from './pages/MyTasks';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 
@@ -30,6 +31,7 @@ function App() {
           <Route path="/senior/new" element={<NewRequest />} />
           <Route path="/family" element={<FamilyHome />} />
           <Route path="/volunteer" element={<VolunteerFeed />} />
+          <Route path="/volunteer/tasks" element={<MyTasks />} />
           <Route path="/admin" element={<AdminDashboard />} />
           {/* Catch-all for unknown URLs */}
           <Route path="*" element={<NotFound />} />

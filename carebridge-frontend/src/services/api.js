@@ -2,7 +2,7 @@
 // All calls from the frontend to the backend live in this one file.
 // Pages import these functions instead of calling fetch() themselves.
 
-// The backend address comes from the .env file (VITE_API_URL=http://localhost:5000).
+// The backend address comes from .env.local (VITE_API_URL=http://localhost:5000).
 // If it is empty, we use MOCK MODE: no network calls, just fake answers,
 // so the pages can be tested before the backend is ready.
 const API_URL = import.meta.env.VITE_API_URL || "";
@@ -22,14 +22,18 @@ function authHeaders() {
   return { Authorization: `Bearer ${localStorage.getItem("token")}` };
 }
 
-// Sends a POST request with a JSON body and returns the JSON answer.
-// If the server answers with an error (400, 401, 409...), we throw an Error
-// that carries the server's "message", so the page can show it.
-async function postJson(path, body) {
+// One helper for every real server call.
+// method: "GET", "POST", "PATCH" or "DELETE"; body is optional.
+// If the server answers with an error (400, 401, 403, 404, 409...), we throw
+// an Error carrying the server's "message", so the page can show it.
+async function request(method, path, body) {
+  const headers = { ...authHeaders() };
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+
   const response = await fetch(`${API_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    method,
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   let data = {};
@@ -45,18 +49,22 @@ async function postJson(path, body) {
   return data;
 }
 
+// ---------- Mock data (only used in MOCK MODE) ----------
+const MOCK_SARA = { firstName: "Sara", lastName: "Nieminen", phone: "040 111 2233" };
+const MOCK_AINO = { firstName: "Aino", lastName: "Virtanen", phone: "03 123 4567" };
+
+// ---------- Auth ----------
+
 // Create a new account. Field names follow the API contract exactly.
 // userData = { firstName, lastName, email, phone, password, role, languages, city }
 export async function register(userData) {
   if (USE_MOCK) {
     console.log("MOCK MODE: register", { ...userData, password: "********" });
     await wait(500);
-    return {
-      token: "mock-token",
-      user: { firstName: userData.firstName, lastName: userData.lastName, role: userData.role },
-    };
+    const { password, ...user } = userData;
+    return { token: "mock-token", user };
   }
-  return postJson("/api/auth/register", userData);
+  return request("POST", "/api/auth/register", userData);
 }
 
 // Log in with email and password. The server decides the role, not the user.
@@ -64,30 +72,31 @@ export async function login(email, password) {
   if (USE_MOCK) {
     console.log("MOCK MODE: login", email);
     await wait(500);
-    return { token: "mock-token", user: { firstName: "Test", lastName: "User", role: "senior" } };
+    return {
+      token: "mock-token",
+      user: { firstName: "Test", lastName: "User", role: "senior", city: "Lahti", languages: ["Finnish"] },
+    };
   }
-  return postJson("/api/auth/login", { email, password });
+  return request("POST", "/api/auth/login", { email, password });
 }
+
+// ---------- Help requests ----------
 
 // The logged-in user's own requests (senior: created, volunteer: accepted).
 export async function getMyRequests() {
   if (USE_MOCK) {
     console.log("MOCK MODE: getMyRequests");
     await wait(500);
-    const sara = { firstName: "Sara", lastName: "Nieminen", phone: "040 111 2233" };
     return [
-      { _id: "1", category: "grocery", description: "Bread, milk and coffee", date: "2026-11-26T10:00:00Z", status: "Accepted", volunteer: sara, rating: null },
-      { _id: "2", category: "companionship", description: "A short walk in the park", date: "2026-11-28T14:00:00Z", status: "Pending", volunteer: null, rating: null },
-      { _id: "3", category: "mobility", description: "Ride to the doctor", date: "2026-11-12T09:00:00Z", status: "Completed", volunteer: sara, rating: null },
+      { _id: "1", category: "grocery", description: "Bread, milk and coffee", city: "Lahti", date: "2026-11-26T10:00:00Z", status: "Accepted", senior: MOCK_AINO, volunteer: MOCK_SARA, rating: null },
+      { _id: "2", category: "companionship", description: "A short walk in the park", city: "Lahti", date: "2026-11-28T14:00:00Z", status: "Pending", senior: MOCK_AINO, volunteer: null, rating: null },
+      { _id: "3", category: "mobility", description: "Ride to the doctor", city: "Lahti", date: "2026-11-12T09:00:00Z", status: "Completed", senior: MOCK_AINO, volunteer: MOCK_SARA, rating: 5, review: "Very kind and on time" },
     ];
   }
-  const response = await fetch(`${API_URL}/api/requests/mine`, { headers: authHeaders() });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || "Could not load your requests.");
-  return data;
+  return request("GET", "/api/requests/mine");
 }
 
-// Create a new help request (senior or family member).
+// Create a new help request.
 // data = { category, description, language, city, date }
 export async function createRequest(data) {
   if (USE_MOCK) {
@@ -95,14 +104,7 @@ export async function createRequest(data) {
     await wait(500);
     return { _id: "mock-new", ...data, status: "Pending", volunteer: null, rating: null };
   }
-  const response = await fetch(`${API_URL}/api/requests`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify(data),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.message || "Could not send your request.");
-  return result;
+  return request("POST", "/api/requests", data);
 }
 
 // Open (Pending) requests for volunteers, with optional filters.
@@ -127,10 +129,7 @@ export async function getOpenRequests(filters = {}) {
   }
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => value && params.append(key, value));
-  const response = await fetch(`${API_URL}/api/requests?${params}`, { headers: authHeaders() });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || "Could not load requests.");
-  return data;
+  return request("GET", `/api/requests?${params}`);
 }
 
 // A volunteer accepts a request.
@@ -140,14 +139,40 @@ export async function acceptRequest(id) {
     await wait(500);
     return { _id: id, status: "Accepted" };
   }
-  const response = await fetch(`${API_URL}/api/requests/${id}/accept`, {
-    method: "PATCH",
-    headers: authHeaders(),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || "Could not accept this request.");
-  return data;
+  return request("PATCH", `/api/requests/${id}/accept`);
 }
+
+// The senior or the volunteer marks a request as done.
+export async function completeRequest(id) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: completeRequest", id);
+    await wait(500);
+    return { _id: id, status: "Completed" };
+  }
+  return request("PATCH", `/api/requests/${id}/complete`);
+}
+
+// The senior rates the volunteer after the help is done.
+export async function rateRequest(id, rating, review) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: rateRequest", id, rating, review);
+    await wait(500);
+    return { _id: id, rating, review };
+  }
+  return request("PATCH", `/api/requests/${id}/rate`, { rating, review });
+}
+
+// The senior cancels a request that nobody has accepted yet.
+export async function cancelRequest(id) {
+  if (USE_MOCK) {
+    console.log("MOCK MODE: cancelRequest", id);
+    await wait(500);
+    return { message: "Request cancelled" };
+  }
+  return request("DELETE", `/api/requests/${id}`);
+}
+
+// ---------- Session helpers ----------
 
 // Save the login "ID card" (token) and the user in the browser.
 export function saveSession({ token, user }) {
