@@ -117,3 +117,52 @@
   .sh-hello { font-size: 32px; }
   .sh-card { padding: 18px; }
 }
+
+/* ---------- Added: card layout with a rating form under it ---------- */
+
+/* The card now stacks: the normal row on top, the rating form below */
+.sh-card { flex-direction: column; align-items: stretch; }
+.sh-card-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.sh-btn:disabled { opacity: 0.6; cursor: wait; }
+
+/* Rating form */
+.sh-rate {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #fffbeb;
+}
+fieldset.sh-rate-stars { margin: 0; padding: 0; border: 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.sh-rate-legend { width: 100%; margin-bottom: 8px; padding: 0; font-weight: 700; }
+.sh-star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+}
+.sh-star:hover { background: #fef3c7; }
+.sh-rate-label { font-weight: 700; font-size: 16px; }
+.sh-rate-text {
+  padding: 12px 14px;
+  font-size: 18px;
+  font-family: inherit;
+  line-height: 1.4;
+  border: 2px solid #6b7280;
+  border-radius: 12px;
+  resize: vertical;
+}
+.sh-rate-text:focus-visible { outline: 4px solid #f59e0b; outline-offset: 2px; }
+.sh-rate-buttons { display: flex; flex-wrap: wrap; gap: 10px; }
