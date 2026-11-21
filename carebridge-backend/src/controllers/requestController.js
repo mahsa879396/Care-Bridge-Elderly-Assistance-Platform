@@ -12,11 +12,26 @@ const CONTACT_STATUSES = ['Accepted', 'Completed'];
 // (so special characters like "." or "(" are treated as normal text).
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-// POST /api/requests  (senior only)
-// Creates a new help request for the logged-in senior.
+// True when this user "owns" the request as the senior, or manages that senior
+// as a family member. Used by complete / rate / cancel.
+const ownsOrManages = async (request, user) => {
+  // The senior who owns the request.
+  if (request.senior.toString() === user.id) return true;
+
+  // A family member who manages the request's senior.
+  if (user.role === 'family') {
+    const senior = await User.findById(request.senior).select('managedBy');
+    if (senior && senior.managedBy && senior.managedBy.toString() === user.id) return true;
+  }
+
+  return false;
+};
+
+// POST /api/requests  (senior or family)
+// A senior posts for themselves; a family member posts for a senior they manage.
 export const createRequest = async (req, res, next) => {
   try {
-    const { category, description, language, city, date } = req.body;
+    const { category, description, language, city, date, seniorId } = req.body;
 
     // 1. Every field must be present.
     const requiredFields = { category, description, language, city, date };
@@ -45,9 +60,27 @@ export const createRequest = async (req, res, next) => {
       return res.status(400).json({ message: 'Date cannot be in the past' });
     }
 
-    // 5. Create the request. The logged-in senior is both the owner and the creator.
+    // 5. Decide whose request this is.
+    //    - A senior posts for themselves.
+    //    - A family member must name a senior they manage.
+    let senior = req.user.id;
+    if (req.user.role === 'family') {
+      // The seniorId must be present, well-formed and managed by this family member.
+      const managesSenior =
+        seniorId &&
+        mongoose.Types.ObjectId.isValid(seniorId) &&
+        (await User.exists({ _id: seniorId, managedBy: req.user.id }));
+
+      if (!managesSenior) {
+        return res.status(403).json({ message: 'You do not manage this senior' });
+      }
+
+      senior = seniorId;
+    }
+
+    // 6. Create the request. "createdBy" is always the logged-in user.
     const request = await Request.create({
-      senior: req.user.id,
+      senior,
       createdBy: req.user.id,
       category,
       description,
@@ -56,7 +89,7 @@ export const createRequest = async (req, res, next) => {
       date: requestDate,
     });
 
-    // 6. Return the new request.
+    // 7. Return the new request.
     return res.status(201).json(request);
   } catch (error) {
     return next(error);
@@ -98,27 +131,45 @@ export const getRequests = async (req, res, next) => {
 
 // GET /api/requests/mine
 // Returns the requests that belong to the logged-in user.
-// Seniors see requests they created; volunteers see requests they accepted.
+// Seniors see requests they created; volunteers see requests they accepted;
+// family members see requests for any senior they manage.
 export const getMyRequests = async (req, res, next) => {
   try {
-    // 1. Pick the field to match on based on the user's role.
-    const filter =
-      req.user.role === 'volunteer' ? { volunteer: req.user.id } : { senior: req.user.id };
+    // 1. Pick the filter based on the user's role.
+    let filter;
+    if (req.user.role === 'volunteer') {
+      filter = { volunteer: req.user.id };
+    } else if (req.user.role === 'family') {
+      // Collect the ids of every senior this family member manages.
+      const managedSeniors = await User.find({ managedBy: req.user.id }).select('_id');
+      filter = { senior: { $in: managedSeniors.map((senior) => senior._id) } };
+    } else {
+      filter = { senior: req.user.id };
+    }
 
     // 2. Newest first.
     const requests = await Request.find(filter).sort({ createdAt: -1 });
 
-    // 3. Attach the other person's name, and their phone number only once the
-    //    request is Accepted or Completed (not while it is still Pending).
+    // 3. Attach the other people's names. Family members always see the senior's
+    //    name, and the volunteer's name + phone only once the request is
+    //    Accepted or Completed. Seniors and volunteers keep the old behaviour.
     for (const request of requests) {
-      const contactFields = CONTACT_STATUSES.includes(request.status)
-        ? 'firstName lastName phone'
-        : 'firstName lastName';
+      if (req.user.role === 'family') {
+        const paths = [{ path: 'senior', select: 'firstName lastName' }];
+        if (CONTACT_STATUSES.includes(request.status)) {
+          paths.push({ path: 'volunteer', select: 'firstName lastName phone' });
+        }
+        await request.populate(paths);
+      } else {
+        const contactFields = CONTACT_STATUSES.includes(request.status)
+          ? 'firstName lastName phone'
+          : 'firstName lastName';
 
-      await request.populate([
-        { path: 'senior', select: contactFields },
-        { path: 'volunteer', select: contactFields },
-      ]);
+        await request.populate([
+          { path: 'senior', select: contactFields },
+          { path: 'volunteer', select: contactFields },
+        ]);
+      }
     }
 
     return res.json(requests);
@@ -204,7 +255,7 @@ export const acceptRequest = async (req, res, next) => {
 };
 
 // PATCH /api/requests/:id/complete
-// The request's senior or its assigned volunteer marks it as done.
+// The request's senior (or managing family member) or its assigned volunteer marks it done.
 export const completeRequest = async (req, res, next) => {
   try {
     // 1. The request must exist.
@@ -216,10 +267,11 @@ export const completeRequest = async (req, res, next) => {
       return res.status(404).json({ message: 'Request not found' });
     }
 
-    // 2. Only the senior who created it or the volunteer who accepted it may complete it.
-    const isSenior = request.senior.toString() === req.user.id;
+    // 2. Allowed for the volunteer who accepted it, the senior who owns it,
+    //    or the family member who manages that senior.
     const isVolunteer = request.volunteer && request.volunteer.toString() === req.user.id;
-    if (!isSenior && !isVolunteer) {
+    const allowed = isVolunteer || (await ownsOrManages(request, req.user));
+    if (!allowed) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -238,8 +290,8 @@ export const completeRequest = async (req, res, next) => {
   }
 };
 
-// PATCH /api/requests/:id/rate  (senior only)
-// The senior rates and reviews the volunteer after the request is completed.
+// PATCH /api/requests/:id/rate  (senior or family)
+// The senior (or the family member managing them) rates the volunteer after completion.
 export const rateRequest = async (req, res, next) => {
   try {
     const { rating, review } = req.body;
@@ -253,8 +305,8 @@ export const rateRequest = async (req, res, next) => {
       return res.status(404).json({ message: 'Request not found' });
     }
 
-    // 2. Only the senior who created it can rate it.
-    if (request.senior.toString() !== req.user.id) {
+    // 2. Only the senior who owns it (or the family member who manages them) can rate it.
+    if (!(await ownsOrManages(request, req.user))) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
@@ -287,8 +339,8 @@ export const rateRequest = async (req, res, next) => {
   }
 };
 
-// DELETE /api/requests/:id  (senior only)
-// The senior cancels a request that has not been accepted yet.
+// DELETE /api/requests/:id  (senior or family)
+// The senior (or the family member managing them) cancels a request that is not accepted yet.
 export const cancelRequest = async (req, res, next) => {
   try {
     // 1. The request must exist.
@@ -300,8 +352,8 @@ export const cancelRequest = async (req, res, next) => {
       return res.status(404).json({ message: 'Request not found' });
     }
 
-    // 2. Only the senior who created it can cancel it.
-    if (request.senior.toString() !== req.user.id) {
+    // 2. Only the senior who owns it (or the family member who manages them) can cancel it.
+    if (!(await ownsOrManages(request, req.user))) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 

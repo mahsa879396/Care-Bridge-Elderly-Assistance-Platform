@@ -16,8 +16,8 @@ const router = Router();
 // Every route below needs a valid token (protect runs first for all of them).
 router.use(protect);
 
-// POST /api/requests -> a senior creates a new request.
-router.post('/', requireRole('senior'), createRequest);
+// POST /api/requests -> a senior (or a family member for a managed senior) creates a request.
+router.post('/', requireRole('senior', 'family'), createRequest);
 
 // GET /api/requests -> a volunteer browses open (Pending) requests.
 router.get('/', requireRole('volunteer'), getRequests);
@@ -35,10 +35,10 @@ router.patch('/:id/accept', requireRole('volunteer'), acceptRequest);
 // PATCH /api/requests/:id/complete -> the senior or the assigned volunteer marks it done.
 router.patch('/:id/complete', completeRequest);
 
-// PATCH /api/requests/:id/rate -> the senior rates the volunteer after completion.
-router.patch('/:id/rate', requireRole('senior'), rateRequest);
+// PATCH /api/requests/:id/rate -> the senior (or managing family member) rates the volunteer.
+router.patch('/:id/rate', requireRole('senior', 'family'), rateRequest);
 
-// DELETE /api/requests/:id -> the senior cancels a request that is still waiting.
-router.delete('/:id', requireRole('senior'), cancelRequest);
+// DELETE /api/requests/:id -> the senior (or managing family member) cancels a waiting request.
+router.delete('/:id', requireRole('senior', 'family'), cancelRequest);
 
 export default router;
