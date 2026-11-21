@@ -3,6 +3,7 @@ import cors from 'cors';
 import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/authRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
+import volunteerRoutes from './routes/volunteerRoutes.js';
 import { notFound, errorHandler } from './middleware/error.middleware.js';
 
 // Create the Express application.
@@ -23,6 +24,9 @@ app.use('/api/auth', authRoutes);
 
 // Request routes: creating and browsing help requests.
 app.use('/api/requests', requestRoutes);
+
+// Volunteer routes: public profile data such as ratings.
+app.use('/api/volunteers', volunteerRoutes);
 
 // 404 handler and central error handler must be registered last.
 app.use(notFound);

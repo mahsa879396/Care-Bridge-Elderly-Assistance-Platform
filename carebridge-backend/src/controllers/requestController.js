@@ -165,3 +165,156 @@ export const getRequestById = async (req, res, next) => {
     return next(error);
   }
 };
+
+// PATCH /api/requests/:id/accept  (volunteer only)
+// A verified volunteer accepts a request that is still waiting.
+export const acceptRequest = async (req, res, next) => {
+  try {
+    // 1. The volunteer must be verified by an admin first.
+    const volunteer = await User.findById(req.user.id);
+    if (!volunteer || volunteer.verificationStatus !== 'verified') {
+      return res.status(403).json({ message: 'Your account is waiting for admin verification' });
+    }
+
+    // 2. The request must exist.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+    const request = await Request.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // 3. Only a request that is still waiting can be accepted.
+    if (request.status !== 'Pending') {
+      return res.status(409).json({ message: 'Request already accepted' });
+    }
+
+    // 4. Accept it for the logged-in volunteer.
+    request.status = 'Accepted';
+    request.volunteer = req.user.id;
+    await request.save();
+
+    // 5. Return it with the senior's contact details.
+    await request.populate('senior', 'firstName lastName phone');
+    return res.json(request);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// PATCH /api/requests/:id/complete
+// The request's senior or its assigned volunteer marks it as done.
+export const completeRequest = async (req, res, next) => {
+  try {
+    // 1. The request must exist.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+    const request = await Request.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // 2. Only the senior who created it or the volunteer who accepted it may complete it.
+    const isSenior = request.senior.toString() === req.user.id;
+    const isVolunteer = request.volunteer && request.volunteer.toString() === req.user.id;
+    if (!isSenior && !isVolunteer) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    // 3. It can only be completed once it has been accepted.
+    if (request.status !== 'Accepted') {
+      return res.status(409).json({ message: 'Only accepted requests can be completed' });
+    }
+
+    // 4. Mark it as completed.
+    request.status = 'Completed';
+    await request.save();
+
+    return res.json(request);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// PATCH /api/requests/:id/rate  (senior only)
+// The senior rates and reviews the volunteer after the request is completed.
+export const rateRequest = async (req, res, next) => {
+  try {
+    const { rating, review } = req.body;
+
+    // 1. The request must exist.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+    const request = await Request.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // 2. Only the senior who created it can rate it.
+    if (request.senior.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    // 3. It must be completed and not rated yet.
+    if (request.status !== 'Completed' || request.rating !== null) {
+      return res.status(409).json({ message: 'Request cannot be rated' });
+    }
+
+    // 4. The rating must be a whole number from 1 to 5.
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be a whole number from 1 to 5' });
+    }
+
+    // 5. The review is optional, but cannot be longer than 300 characters.
+    if (review !== undefined && review !== null && typeof review !== 'string') {
+      return res.status(400).json({ message: 'Review must be text' });
+    }
+    if (typeof review === 'string' && review.length > 300) {
+      return res.status(400).json({ message: 'Review must be at most 300 characters' });
+    }
+
+    // 6. Save the rating (and the review, when one was sent).
+    request.rating = rating;
+    if (typeof review === 'string') request.review = review;
+    await request.save();
+
+    return res.json(request);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// DELETE /api/requests/:id  (senior only)
+// The senior cancels a request that has not been accepted yet.
+export const cancelRequest = async (req, res, next) => {
+  try {
+    // 1. The request must exist.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+    const request = await Request.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    // 2. Only the senior who created it can cancel it.
+    if (request.senior.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    // 3. Only requests that are still waiting can be cancelled.
+    if (request.status !== 'Pending') {
+      return res.status(409).json({ message: 'Only waiting requests can be cancelled' });
+    }
+
+    // 4. Delete the request.
+    await request.deleteOne();
+
+    return res.json({ message: 'Request cancelled' });
+  } catch (error) {
+    return next(error);
+  }
+};
