@@ -1,0 +1,40 @@
+/* LandingMobile.css: fixes for small screens (phones).
+   Loaded after the main styles, so these rules win on phones only. */
+
+@media (max-width: 768px) {
+  /* Space on the left and right so text never touches the screen edge */
+  body .page,
+  body .hero,
+  body .how-it-works {
+    padding-left: 16px;
+    padding-right: 16px;
+    box-sizing: border-box;
+  }
+
+  body .hero__heading {
+    font-size: 2rem;
+    line-height: 1.15;
+  }
+
+  /* Header buttons stay on one line */
+  header a,
+  header button {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Very small phones: smaller header buttons, and hide the
+     "How it works" link (the section is right below anyway) */
+  header a,
+  header button {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 16px;
+  }
+
+  header a[href="#how-it-works"],
+  header a[href="/#how-it-works"] {
+    display: none;
+  }
+}
