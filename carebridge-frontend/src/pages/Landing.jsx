@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-
+import './LandingMobile.css';
 /*
   Landing page — the public home page of CareBridge.
   It has three main parts:
@@ -69,19 +69,19 @@ function HeartIcon() {
 // Each card is a big link that takes the user to the register page.
 const heroCards = [
   {
-    to: '/register',
+    to: '/register?role=senior',
     icon: <PersonIcon />,
     title: 'I need help',
     desc: 'Post a request for yourself',
   },
   {
-    to: '/register',
+    to: '/register?role=family',
     icon: <PeopleIcon />,
     title: 'I help a family member',
     desc: 'Ask for help for a parent or relative, and follow every step',
   },
   {
-    to: '/register',
+    to: '/register?role=volunteer',
     icon: <HeartIcon />,
     title: 'I want to volunteer',
     desc: 'Help seniors in your area after a one-time identity check',
