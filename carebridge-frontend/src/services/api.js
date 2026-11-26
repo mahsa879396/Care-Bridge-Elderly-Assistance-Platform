@@ -152,7 +152,7 @@ export async function completeRequest(id) {
   return request("PATCH", `/api/requests/${id}/complete`);
 }
 
-// The senior rates the volunteer after the help is done.
+// The senior or family member rates the volunteer after the help is done.
 export async function rateRequest(id, rating, review) {
   if (USE_MOCK) {
     console.log("MOCK MODE: rateRequest", id, rating, review);
