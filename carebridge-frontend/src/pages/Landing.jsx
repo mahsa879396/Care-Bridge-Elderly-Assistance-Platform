@@ -5,7 +5,7 @@ import './LandingMobile.css';
   It has three main parts:
     1. Hero: badge + heading + intro text, and three large action cards
     2. "How it works": three numbered steps
-    3. Footer: a partnership link for municipalities
+    3. Footer: a short line about the project
 */
 
 // ===== Inline SVG icons (no emoji, for accessibility and crispness) =====
@@ -98,7 +98,7 @@ const steps = [
   {
     number: 2,
     title: 'A volunteer accepts',
-    desc: 'Verified volunteers nearby who speak the language get a notification.',
+    desc: 'Verified volunteers nearby who speak the language see the request and can accept it.',
   },
   {
     number: 3,
@@ -153,8 +153,7 @@ function Landing() {
       {/* ===== Footer ===== */}
       <footer className="site-footer">
         <div className="page" style={{ padding: '0' }}>
-          Municipality?{' '}
-          <a href="#partnerships">Learn about partnerships</a>
+          CareBridge · A full-stack student project, 2026
         </div>
       </footer>
     </>
