@@ -28,6 +28,11 @@ const REQUEST_BADGES = {
   Accepted: "ad-badge ad-badge--accepted",
   Completed: "ad-badge ad-badge--done",
 };
+const REQUEST_LABELS = {
+  Pending: "Waiting",
+  Accepted: "Accepted",
+  Completed: "Done",
+};
 
 function formatDate(isoDate) {
   return new Date(isoDate).toLocaleString("en-GB", {
@@ -217,7 +222,7 @@ export default function AdminDashboard() {
                   <td>{fullName(r.senior)}</td>
                   <td>{fullName(r.createdBy)}</td>
                   <td>{formatDate(r.date)}</td>
-                  <td><span className={REQUEST_BADGES[r.status]}>{r.status === "Pending" ? "Waiting" : r.status}</span></td>
+                  <td><span className={REQUEST_BADGES[r.status]}>{REQUEST_LABELS[r.status] || r.status}</span></td>
                   <td>{fullName(r.volunteer)}</td>
                 </tr>
               ))}
